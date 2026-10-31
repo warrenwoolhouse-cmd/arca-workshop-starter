@@ -227,3 +227,14 @@ describe("pushing workshop.json to the board", () => {
     assert.match(out, /The board last received your file \d+ seconds ago, and it has this version/);
   });
 });
+
+describe("stopping", () => {
+  test("the site stops when its supervisor is killed, freeing the port", async () => {
+    const site = await startSite();
+    site.child.kill("SIGKILL");
+    await waitFor(async () => {
+      try { await fetch(`${site.base}/workshop.json`, { signal: AbortSignal.timeout(500) }); return false; } catch { return true; }
+    }, { timeout: 5000 });
+    require("fs").rmSync(site.dir, { recursive: true, force: true });
+  });
+});

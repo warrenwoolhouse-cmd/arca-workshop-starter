@@ -27,7 +27,7 @@ let quickExits = 0;
 
 function start() {
   const startedAt = Date.now();
-  child = spawn(process.execPath, [MAIN], { cwd: config.ROOT, stdio: ["ignore", "pipe", "pipe"], windowsHide: true });
+  child = spawn(process.execPath, [MAIN], { cwd: config.ROOT, stdio: ["ignore", "pipe", "pipe", "ipc"], windowsHide: true });
   for (const stream of [child.stdout, child.stderr]) {
     stream.on("data", (chunk) => { process.stdout.write(chunk); log.write(chunk); });
   }

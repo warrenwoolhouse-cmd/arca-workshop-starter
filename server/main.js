@@ -70,4 +70,8 @@ async function main() {
   guard.startPush();
 }
 
+// If the supervisor stops (even if it's killed), stop too. Otherwise, on
+// Windows, an orphaned copy would keep port 8080 and serve old code.
+if (process.send) process.on("disconnect", () => process.exit(0));
+
 main();
