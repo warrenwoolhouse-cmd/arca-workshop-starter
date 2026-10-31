@@ -1,0 +1,113 @@
+/* Warren Woolhouse design tokens for the quiz.
+   Source: the Warren Woolhouse design system (Light theme), plus quiz-specific
+   sizes for the phone and the big screen. Use only these variables for colour,
+   type, spacing, corners and borders. Serve the design/ folder as static files so
+   the font paths below resolve. */
+
+@font-face { font-family: "Lexend"; src: url("assets/fonts/Lexend-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Lexend"; src: url("assets/fonts/Lexend-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Lexend"; src: url("assets/fonts/Lexend-600.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Lexend"; src: url("assets/fonts/Lexend-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+
+:root {
+  color-scheme: light; /* light only: stops phones in dark mode inverting the page */
+
+  /* Brand fields */
+  --graphite: #3e4245;        /* brand charcoal: dark bands, bars, the mark. Not body text. */
+  --steel: #acadaf;           /* brand grey: decorative fills and non-highlighted bars only (2.2:1, never text) */
+
+  /* Surfaces (light) */
+  --surface-000: #ffffff;     /* page ground */
+  --surface-100: #f5f5f4;     /* panels, cards, wells */
+  --surface-200: #ebebea;     /* hover, table header rows, pressed */
+  --line: #d6d7d8;            /* 1px hairlines and card edges */
+  --line-strong: #8a8d92;     /* control borders: inputs, answer options (3:1+) */
+
+  /* Text */
+  --ink: #1f2124;             /* headings and body (16:1 on white) */
+  --ink-muted: #5c5f64;       /* secondary text, captions, labels (5.3:1+ on every surface) */
+
+  /* The one accent */
+  --teal: #0b7a75;            /* fill only: primary action, selected answer, the correct answer. Pair with --on-teal. */
+  --on-teal: #ffffff;         /* text on a teal fill (5.2:1) */
+  --teal-ink: #0a6e69;        /* teal as text: links, a highlighted figure (5.1:1+) */
+  --focus: #0b7a75;           /* focus ring, 2px solid, 2px offset */
+
+  /* On graphite (bands and the big screen's opening and closing views) */
+  --on-graphite: #f1f1f0;         /* text on graphite (9:1) */
+  --on-graphite-muted: #c9cacc;   /* secondary text on graphite (6.2:1) */
+  --teal-on-graphite: #5fd6ca;    /* accent on graphite: eyebrows and the corner-cut edge (5.8:1) */
+  --mark-primary: #3e4245;
+  --mark-secondary: #acadaf;
+
+  /* Status: real status only (connection problems, admin errors), always with a word */
+  --success: #1f5fd1;  --success-surface: #eaf0fc;
+  --warning: #8a5a00;  --warning-surface: #fbf3e2;
+  --danger:  #b42318;  --danger-surface:  #fcebe9;
+
+  /* Quiz roles (built from the brand colours above) */
+  --correct: var(--teal);           /* the correct answer: fill */
+  --correct-ink: var(--teal-ink);   /* "Correct" as text */
+  --bar: var(--graphite);           /* chart bars with no right answer (audience questions, results) */
+  --bar-dim: var(--steel);          /* non-correct answer bars, dimmed panels' letter badges */
+
+  /* Type */
+  --font: "Lexend", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --track-display: -0.025em;   /* headline letter-spacing */
+  --track-label: 0.08em;       /* capitals eyebrows */
+
+  /* Phone and admin type scale */
+  --t-display: 32px;  --lh-display: 38px;   /* waiting screens, big statements */
+  --t-title: 26px;    --lh-title: 32px;     /* the question, screen headings */
+  --t-lead: 19px;     --lh-lead: 30px;      /* supporting line */
+  --t-body: 17px;     --lh-body: 26px;      /* answers, labels, inputs (>=16px stops iOS zoom) */
+  --t-small: 14px;    --lh-small: 22px;     /* captions, metadata */
+  --t-label: 12px;    --lh-label: 16px;     /* capitals eyebrows, weight 700 */
+
+  /* Big screen: text size control. 1 = default; the control steps it 0.8 to 1.4 in 0.1 steps. */
+  --board-scale: 1;
+
+  /* Big-screen type scale. Tuned for 1920x1080 and scaled with the window and --board-scale.
+     At 1920x1080 and scale 1: caption 36px, body 48px, heading 60px, display 84px, number 240px.
+     Nothing on the big screen is ever smaller than --b-caption. */
+  --b-caption: calc(var(--board-scale) * min(3.33vh, 1.875vw));
+  --b-body:    calc(var(--board-scale) * min(4.44vh, 2.5vw));
+  --b-heading: calc(var(--board-scale) * min(5.56vh, 3.125vw));
+  --b-display: calc(var(--board-scale) * min(7.78vh, 4.375vw));
+  --b-number:  calc(var(--board-scale) * min(22.2vh, 12.5vw));
+  --b-gap:     calc(var(--board-scale) * min(2.2vh, 1.25vw));   /* 24px: gaps between options and rows */
+  --b-pad-x:   6vw;   /* page margins: these don't scale with text */
+  --b-pad-y:   6vh;
+
+  /* Spacing (4px base) */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px; --space-24: 96px;
+
+  /* Corners: square by default */
+  --radius-0: 0;     /* cards, panels, answer options, bars, tags */
+  --radius-sm: 2px;  /* buttons, inputs */
+  --radius-md: 4px;  /* menus and popovers only */
+
+  /* The 67deg cut: the system's one shape. tan(67deg) = 2.36, so a cut is always
+     2.36 times as tall as it is wide. */
+  --angle-stroke: 67deg;
+  --cut-ratio: 2.36;
+  /* Button cut: the right edge of a button, width = button height / 2.36 */
+  --btn-cut-md: 19px;   /* 44px buttons (admin) */
+  --btn-cut-tap: 24px;  /* 56px buttons (phones) */
+  --btn-cut-lg: 31px;   /* 72px main button on the quiz control */
+  /* Corner cut: bottom-right corner of a graphite band, width x (width * 2.36) */
+  --corner-cut-phone: 50px;   /* join-screen band: 50 x 118 */
+  --corner-cut-board: 12vw;   /* big-screen graphite views: 230 x 543 at 1920 wide */
+
+  /* Touch and motion */
+  --tap-min: 56px;            /* minimum height of anything tappable on phones */
+  --ease-fast: 120ms linear;  /* hovers, presses */
+  --ease: 200ms linear;       /* panels, count changes, bar growth */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --ease-fast: 0ms linear; --ease: 0ms linear; }
+}
+
+html { font-family: var(--font); color: var(--ink); background: var(--surface-000); }

@@ -1,0 +1,12 @@
+[
+  {"slug": "accuracy_report", "name": "Marking its own homework", "points": 5},
+  {"slug": "supervisor_view", "name": "Supervisor's dashboard", "points": 10},
+  {"slug": "explorer", "name": "Email assessment explorer", "points": 10},
+  {"slug": "confidence", "name": "The \"not sure\" pile", "points": 10},
+  {"slug": "threads", "name": "Customer history", "points": 10},
+  {"slug": "injection_guard", "name": "Manipulation guard", "points": 10},
+  {"slug": "draft_replies", "name": "Drafted replies", "points": 10},
+  {"slug": "approval", "name": "Approve before sending", "points": 15},
+  {"slug": "review_override", "name": "Assessment editor", "points": 15},
+  {"slug": "audit_log", "name": "Audit log", "points": 10}
+]

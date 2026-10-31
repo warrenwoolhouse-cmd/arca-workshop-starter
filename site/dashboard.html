@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard coming soon</title>
+<link rel="stylesheet" href="/tokens.css">
+<style>
+  /* Placeholder until the table builds its own dashboard. It fills any
+     window, so it reads well as a small tile on the big screen. */
+  html, body { margin: 0; height: 100%; }
+  body {
+    position: relative; overflow: hidden;
+    background: var(--graphite); color: var(--on-graphite);
+    font-family: var(--font);
+  }
+  .content {
+    position: absolute; left: 7vw; top: 9vh; bottom: 9vh;
+    right: calc(14vw + 7vw);  /* stops short of the corner cut */
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .mark { height: max(28px, 6vh); width: auto; align-self: flex-start; }
+  .eyebrow {
+    margin: 0 0 2vh; font-size: max(12px, 2.4vw); line-height: 1.2; font-weight: 700;
+    letter-spacing: var(--track-label); color: var(--teal-on-graphite);
+  }
+  h1 {
+    margin: 0 0 3vh; font-size: max(26px, 6vw); line-height: 1.1; font-weight: 600;
+    letter-spacing: var(--track-display); overflow-wrap: anywhere;
+  }
+  .note { margin: 0; font-size: max(17px, 3vw); line-height: 1.3; color: var(--on-graphite-muted); }
+  .count { margin: 2vh 0 0; font-size: max(14px, 2.2vw); line-height: 1.3; color: var(--on-graphite-muted); }
+  .corner-cut { position: absolute; right: 0; bottom: 0; width: 14vw; height: calc(14vw * 2.36); }
+</style>
+</head>
+<body>
+  <div class="content">
+    <img class="mark" src="/assets/ww-mark-reversed.svg" alt="WW">
+    <div>
+      <p class="eyebrow" id="table">WW LOANS INBOX</p>
+      <h1 id="name">Our team</h1>
+      <p class="note">This team hasn't built its dashboard yet.</p>
+      <p class="count" id="count"></p>
+    </div>
+  </div>
+  <svg class="corner-cut" viewBox="0 0 100 236" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">
+    <polygon points="100,-19 100,236 -8,236" fill="var(--teal-on-graphite)"/>
+    <polygon points="100,0 100,236 0,236" fill="var(--surface-000)"/>
+  </svg>
+<script>
+  // Fills in the table's number, name and progress from workshop.json.
+  async function refresh() {
+    try {
+      const w = await (await fetch("/workshop.json", { cache: "no-store" })).json();
+      if (w.team) {
+        document.getElementById("table").textContent = `TABLE ${w.team}`;
+        document.title = `Table ${w.team}: dashboard coming soon`;
+      }
+      if (w.name) document.getElementById("name").textContent = w.name;
+      const n = Array.isArray(w.emails) ? w.emails.length : 0;
+      document.getElementById("count").textContent =
+        n === 0 ? "No emails labelled yet." : `${n} email${n === 1 ? "" : "s"} labelled so far.`;
+    } catch {
+      // workshop.json is mid-save or broken: keep what's showing.
+    }
+  }
+  refresh();
+  setInterval(refresh, 10000);
+</script>
+</body>
+</html>

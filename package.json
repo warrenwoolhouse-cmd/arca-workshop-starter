@@ -1,0 +1,15 @@
+{
+  "name": "arca-workshop-starter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WW Loans inbox triage: the starter folder for each table at the ARCA workshop.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server/supervisor.js",
+    "check": "node tools/check.js",
+    "test": "node --test --test-concurrency=1 \"test/*.test.js\""
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0"
+  }
+}
