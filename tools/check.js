@@ -86,7 +86,7 @@ function main() {
     if (morning === 250) good.push(morningLine);
     else if (afternoon === 0) warnings.push(`${morningLine} Missing ones score nothing.`);
     if (afternoon > 0) (afternoon === 250 ? good : warnings).push(`Afternoon emails labelled: ${afternoon} of 250.`);
-    if (morning) good.push(`Flagged as priority: ${flaggedMorning} of ${morning} morning emails (about 1 in 10 is typical).`);
+    if (morning) good.push(`Flagged as priority: ${flaggedMorning} of ${morning} morning emails.`);
     if (afternoon) good.push(`Flagged as priority: ${flaggedAfternoon} of ${afternoon} afternoon emails.`);
 
     if (bad.id.length) problems.push(`These ids aren't emails in the workshop, so they're ignored: ${list(bad.id)}. Ids look like P0001 or H0001.`);
@@ -102,7 +102,7 @@ function main() {
   } else {
     const done = [];
     for (const f of w.features) {
-      if (!f || !featureSlugs.has(f.feature)) { warnings.push(`"${f && f.feature}" isn't one of the features on the scoring sheet, so it won't score.`); continue; }
+      if (!f || !featureSlugs.has(f.feature)) { warnings.push(`"${f && f.feature}" isn't one of the features in data/features.json, so it won't score.`); continue; }
       if (typeof f.done !== "boolean") { problems.push(`Feature "${f.feature}": "done" must be true or false.`); continue; }
       if (!f.done) continue;
       if (typeof f.url !== "string" || !f.url.startsWith("/")) { problems.push(`Feature "${f.feature}" is marked done but has no "url" showing where to see it, like "/dashboard.html".`); continue; }

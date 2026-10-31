@@ -9,8 +9,7 @@ If you're at a table, you don't need this page: open Claude Code with the Start 
 | Path | What it is |
 | --- | --- |
 | `CLAUDE.md` | Instructions for the table's Claude Code. It imports `TABLE.md`, which the site writes for this laptop's table each time it starts |
-| `SCORING-SHEET.md` | The scoring rules from the table pack |
-| `data/` | The morning's 250 emails, 75 answers, the categories and the bonus features |
+| `data/` | The morning's 250 emails, 75 answers, the categories and the bonus features. The scoring sheet is on paper in the table pack |
 | `site/` | The table's site. `dashboard.html` starts as a placeholder |
 | `server/` | The local site (Node, no other packages). `team-routes.js` is the only file tables change |
 | `tools/check.js` | `npm run check`: is `workshop.json` ready for the board? |
