@@ -63,7 +63,7 @@ The site sends `workshop.json` to the central board a few seconds after every ch
 - **Never change** `server/guard.js`, `server/main.js`, `server/core.js`, `server/config.js`, `server/table.js` or `server/supervisor.js`. The guard keeps other tables out of your site and keeps your score live on the board. If something seems to need a change there, do it in `server/team-routes.js` instead.
 
 ## The second batch at 4:05pm
-The afternoon's 250 emails (ids H0001 to H0250) appear at https://warrenwoolhouse.com/batch2 at 4:05pm. Before that, the address answers "Not released yet". The table has 5 minutes. Make sure one simple command (such as `npm run batch2`) fetches them, labels them with the same tool, and adds them to `workshop.json` alongside the morning's. If the batch isn't released yet, it should say so in plain English and stop. Test it ahead of time on a copy of a few morning emails.
+The afternoon's 250 emails (ids H0001 to H0250) appear at https://workshop.warrenwoolhouse.com/batch2 at 4:05pm. Before that, the address answers "Not released yet". The table has 5 minutes. Make sure one simple command (such as `npm run batch2`) fetches them, labels them with the same tool, and adds them to `workshop.json` alongside the morning's. If the batch isn't released yet, it should say so in plain English and stop. Test it ahead of time on a copy of a few morning emails.
 
 ## Safety
 - This site is on the internet. Never put the API key, the team key, or anything that isn't meant to be seen, in `site/`, `saved/` or `workshop.json`. Never print either key in the terminal.

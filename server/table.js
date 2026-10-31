@@ -43,7 +43,7 @@ Written by the local site each time it starts, from this laptop's settings. Don'
 - **Phones:** people get into ${site} through the link on their team page. Through the internet the site needs the team's key, which is in \`WORKSHOP_TEAM_TOKEN\`. Never show, print or save the key anywhere.
 - **The board** at ${central} reads this table's \`workshop.json\` a few seconds after every change.
 - **Hand labels from phones:** \`GET ${central}/api/team/labels\` with the header \`Authorization: Bearer <WORKSHOP_TEAM_TOKEN>\`. Read the key from the environment variable in code; never type it out.
-- **The afternoon's emails:** https://warrenwoolhouse.com/batch2 from 4:05pm.
+- **The afternoon's emails:** https://workshop.warrenwoolhouse.com/batch2 from 4:05pm.
 `;
 }
 
