@@ -2,14 +2,14 @@
 
 The starting folder for each table at Warren Woolhouse's hands-on workshop, ARCA Credit Summit, 11 November 2026. Everything in it is fictitious: WW Loans, Kestrel Credit Reporting and every person in the emails.
 
-If you're at a table, you don't need this page: open Claude Code with the Start workshop shortcut and paste the first prompt from `STARTER-PROMPTS.md`.
+If you're at a table, you don't need this page: open Claude Code with the Start workshop shortcut and tell it what you want to build.
 
 ## What's here
 
 | Path | What it is |
 | --- | --- |
 | `CLAUDE.md` | Instructions for the table's Claude Code. It imports `TABLE.md`, which the site writes for this laptop's table each time it starts |
-| `STARTER-PROMPTS.md`, `SCORING-SHEET.md` | The prompts and the scoring rules from the table pack |
+| `SCORING-SHEET.md` | The scoring rules from the table pack |
 | `data/` | The morning's 250 emails, 75 answers, the categories and the bonus features |
 | `site/` | The table's site. `dashboard.html` starts as a placeholder |
 | `server/` | The local site (Node, no other packages). `team-routes.js` is the only file tables change |
