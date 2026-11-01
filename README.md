@@ -13,7 +13,7 @@ If you're at a table, you don't need this page: open Claude Code with the Start 
 | `site/` | The table's site. `dashboard.html` starts as a placeholder |
 | `server/` | The local site (Node, no other packages). `team-routes.js` is the only file tables change |
 | `tools/check.js` | `npm run check`: is `workshop.json` ready for the board? |
-| `setup/` | Laptop setup, starting with the network check |
+| `setup/` | Laptop setup: `setup.ps1` (one pasted command per laptop, safe to run again), `reset.ps1` (after the event) and `check-network.ps1`, which setup runs first |
 
 ## Running the site
 
