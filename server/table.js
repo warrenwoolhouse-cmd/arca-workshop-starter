@@ -38,7 +38,7 @@ The install script hasn't set WORKSHOP_TEAM on this laptop. Tell the table to as
 Written by the local site each time it starts, from this laptop's settings. Don't edit it; it's rewritten.
 
 - **Table number:** ${n}. \`workshop.json\` must say \`"team": ${n}\`. The board shows this table as Table ${n}.
-- **Team name:** ${name}. That's the name the laptop was set up with. If the table picks a new name, change \`"name"\` in \`workshop.json\` and the board picks it up.
+- **Team name:** ${name}. That's the name the laptop was set up with. When the table picks a name, or asks whether it's connected, use the \`/hello\` skill (\`npm run hello -- "<name>"\`): it sets \`"name"\` in \`workshop.json\`, sends it to the board and checks the site. The board shows the name in the latest \`workshop.json\`.
 - **The table's site:** ${site}. Give this address whenever you tell people where to look, with the page on the end, for example ${site}/dashboard.html. Never mention localhost or a port.
 - **Phones:** people get into ${site} through the link on their team page. Through the internet the site needs the team's key, which is in \`WORKSHOP_TEAM_TOKEN\`. Never show, print or save the key anywhere.
 - **The board** at ${central} reads this table's \`workshop.json\` a few seconds after every change.
