@@ -18,6 +18,7 @@ Triage the shared inbox of WW Loans (a fictitious credit provider) for one day. 
 
 - **`data/practice.json`:** the morning's 250 emails (ids P0001 to P0250).
 - **`data/categories.json`:** the ten categories, in tie-break order. Read them from this file; never type the list into code.
+- **The table's hand labels:** people can label emails by hand on their phones, on the team page. There are no other answers. Their labels are at `$WORKSHOP_CENTRAL_URL/api/team/labels`, with the header `Authorization: Bearer <WORKSHOP_TEAM_TOKEN>`, as `[{ "id", "category", "priority": true or false, "by" }]`.
 
 Every email gets one category and a priority flag (true or false).
 
