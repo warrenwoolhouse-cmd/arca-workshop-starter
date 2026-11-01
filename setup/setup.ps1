@@ -436,6 +436,12 @@ function Protect-Root {
     if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
         Stop-Setup "$Root is a link to somewhere else, not a folder. Delete it, then run setup again."
     }
+    # Another account that made this folder could have planted files in it.
+    $me = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    $owner = $item.GetAccessControl().GetOwner([Security.Principal.SecurityIdentifier]).Value
+    if (@('S-1-5-18', 'S-1-5-32-544', $me) -notcontains $owner) {
+        Stop-Setup "$Root was made by another account on this laptop. Delete it (or rename it), then run setup again."
+    }
     # A fresh list with exactly three entries, replacing whatever was there.
     $acl = New-Object System.Security.AccessControl.DirectorySecurity
     $acl.SetAccessRuleProtection($true, $false)
