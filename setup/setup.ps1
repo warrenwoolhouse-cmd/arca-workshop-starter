@@ -432,9 +432,19 @@ function Install-TeamFolder($State, [int]$Team) {
 # for other accounts, so nobody else can change the scripts setup and the
 # site task run. Set once, on the top folder; everything inside inherits it.
 function Protect-Root {
-    $who = "$env:USERDOMAIN\$env:USERNAME"
-    $r = Invoke-Program 'icacls.exe' @($Root, '/inheritance:r', '/grant:r', '*S-1-5-18:(OI)(CI)F', '*S-1-5-32-544:(OI)(CI)F', "${who}:(OI)(CI)F", '/Q')
-    if ($r.Code -ne 0) { Stop-Setup "Couldn't set who can use $Root. The details are in $LogFile." }
+    $item = Get-Item $Root -Force
+    if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        Stop-Setup "$Root is a link to somewhere else, not a folder. Delete it, then run setup again."
+    }
+    # A fresh list with exactly three entries, replacing whatever was there.
+    $acl = New-Object System.Security.AccessControl.DirectorySecurity
+    $acl.SetAccessRuleProtection($true, $false)
+    foreach ($sid in @('S-1-5-18', 'S-1-5-32-544', [Security.Principal.WindowsIdentity]::GetCurrent().User.Value)) {
+        $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule(
+            (New-Object System.Security.Principal.SecurityIdentifier $sid), 'FullControl', 'ContainerInherit,ObjectInherit', 'None', 'Allow')))
+    }
+    try { $item.SetAccessControl($acl) }
+    catch { Stop-Setup "Couldn't set who can use $Root ($($_.Exception.Message))." }
 }
 
 # Folders made from an administrator window belong to Administrators, and Git
@@ -798,14 +808,15 @@ function Invoke-SelfTest([string]$ClaudeExe, $Keys) {
 
 function Invoke-Setup {
     $clock = [Diagnostics.Stopwatch]::StartNew()
-    New-Item -ItemType Directory -Force -Path $SetupDir | Out-Null
-    Protect-Root
-    Write-Log "---- setup started on $env:COMPUTERNAME as $env:USERNAME"
     Write-Host ''
     Write-Host 'ARCA workshop: laptop setup' -ForegroundColor Cyan
     Write-Host 'Takes about 10 minutes. It asks for the table number and the admin password.'
 
-    Assert-Ready
+    Assert-Ready  # before anything changes
+    New-Item -ItemType Directory -Force -Path $Root | Out-Null
+    Protect-Root
+    New-Item -ItemType Directory -Force -Path $SetupDir | Out-Null
+    Write-Log "---- setup started on $env:COMPUTERNAME as $env:USERNAME"
     $state = Read-State
     Invoke-NetworkCheck
 
