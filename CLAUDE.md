@@ -17,7 +17,6 @@ You're helping a table of about eight people at the ARCA Credit Summit. They wor
 Triage the shared inbox of WW Loans (a fictitious credit provider) for one day. **Today is Monday 9 November 2026**: every email arrived today, and deadlines count from today, whatever the laptop's clock says.
 
 - **`data/practice.json`:** the morning's 250 emails (ids P0001 to P0250).
-- **`data/practice-key.csv`:** the answers for 75 of them.
 - **`data/categories.json`:** the ten categories, in tie-break order. Read them from this file; never type the list into code.
 
 Every email gets one category and a priority flag (true or false).

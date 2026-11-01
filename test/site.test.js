@@ -16,7 +16,8 @@ describe("serving and access", () => {
     assert.equal(w.team, 7);
     assert.equal(w.name, "Test Table");
     assert.deepEqual(w.emails, []);
-    assert.equal(w.features.length, 10);
+    const features = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "features.json"), "utf8"));
+    assert.deepEqual(w.features.map((f) => f.feature), features.map((f) => f.slug));
     assert.ok(w.features.every((f) => f.done === false));
     assert.match(w.updated, /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\+1[01]:00$/);
     const table = fs.readFileSync(path.join(site.dir, "TABLE.md"), "utf8");
