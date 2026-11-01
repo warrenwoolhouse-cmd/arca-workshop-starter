@@ -40,7 +40,9 @@ $Kit = $env:ARCA_SETUP_KIT
 # ---------------------------------------------------------------------------
 # Output and logging
 
+$script:LogReady = $false  # no log until C:\Workshop has passed its checks
 function Write-Log([string]$Text) {
+    if (-not $script:LogReady) { return }
     try { Add-Content -Path $LogFile -Value ("{0:yyyy-MM-dd HH:mm:ss} {1}" -f (Get-Date), $Text) -Encoding UTF8 } catch {}
 }
 function Say([string]$Text) { Write-Host $Text; Write-Log $Text }
@@ -822,6 +824,7 @@ function Invoke-Setup {
     New-Item -ItemType Directory -Force -Path $Root | Out-Null
     Protect-Root
     New-Item -ItemType Directory -Force -Path $SetupDir | Out-Null
+    $script:LogReady = $true
     Write-Log "---- setup started on $env:COMPUTERNAME as $env:USERNAME"
     $state = Read-State
     Invoke-NetworkCheck
