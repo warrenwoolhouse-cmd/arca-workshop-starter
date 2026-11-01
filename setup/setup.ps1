@@ -404,7 +404,7 @@ function Install-TeamFolder($State, [int]$Team) {
 
     if (-not (Test-Path (Join-Path $TeamDir 'node_modules\@anthropic-ai\sdk'))) {
         $npm = Join-Path (Split-Path (Get-Command node.exe).Source) 'npm.cmd'
-        $r = Invoke-Program $npm @('ci', '--no-audit', '--no-fund', '--loglevel=error') -WorkDir $TeamDir
+        $r = Invoke-Program $npm @('ci', '--ignore-scripts', '--no-audit', '--no-fund', '--loglevel=error') -WorkDir $TeamDir
         if ($r.Code -ne 0) { Stop-Setup "Couldn't install the folder's packages (npm said $($r.Code)). Check the wifi, then run setup again." }
         Say-Ok 'Installed the packages the table''s tools use'
     }
@@ -428,13 +428,23 @@ function Install-TeamFolder($State, [int]$Team) {
     }
 }
 
+# C:\Workshop is for this laptop's table account only: no inherited access
+# for other accounts, so nobody else can change the scripts setup and the
+# site task run. Set once, on the top folder; everything inside inherits it.
+function Protect-Root {
+    $who = "$env:USERDOMAIN\$env:USERNAME"
+    $r = Invoke-Program 'icacls.exe' @($Root, '/inheritance:r', '/grant:r', '*S-1-5-18:(OI)(CI)F', '*S-1-5-32-544:(OI)(CI)F', "${who}:(OI)(CI)F", '/Q')
+    if ($r.Code -ne 0) { Stop-Setup "Couldn't set who can use $Root. The details are in $LogFile." }
+}
+
 # Folders made from an administrator window belong to Administrators, and Git
-# refuses to work in a folder owned by someone else. Hand everything to the
-# person signed in.
+# refuses to work in a folder owned by someone else. Hand the team folder and
+# its history to the person signed in (just those two, not everything inside).
 function Set-FolderOwner {
     $who = "$env:USERDOMAIN\$env:USERNAME"
-    [void](Invoke-Program 'icacls.exe' @($Root, '/grant', "${who}:(OI)(CI)F", '/T', '/C', '/Q'))
-    [void](Invoke-Program 'icacls.exe' @($Root, '/setowner', $who, '/T', '/C', '/Q'))
+    foreach ($p in @($Root, $TeamDir, (Join-Path $TeamDir '.git'))) {
+        if (Test-Path $p) { [void](Invoke-Program 'icacls.exe' @($p, '/setowner', $who, '/C', '/Q')) }
+    }
 }
 
 # ---------------------------------------------------------------------------
@@ -789,6 +799,7 @@ function Invoke-SelfTest([string]$ClaudeExe, $Keys) {
 function Invoke-Setup {
     $clock = [Diagnostics.Stopwatch]::StartNew()
     New-Item -ItemType Directory -Force -Path $SetupDir | Out-Null
+    Protect-Root
     Write-Log "---- setup started on $env:COMPUTERNAME as $env:USERNAME"
     Write-Host ''
     Write-Host 'ARCA workshop: laptop setup' -ForegroundColor Cyan

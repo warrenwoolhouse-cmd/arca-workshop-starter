@@ -43,6 +43,15 @@ function Invoke-Reset {
         Write-Host 'This window isn''t running as administrator. Right-click Start, choose "Terminal (Admin)", and run reset again.' -ForegroundColor Red
         return
     }
+    # Settings and keys live in the signed-in person's profile; resetting as
+    # another account would report clean while leaving them behind.
+    $owners = @(Get-CimInstance Win32_Process -Filter "Name='explorer.exe'" -ErrorAction SilentlyContinue |
+        ForEach-Object { (Invoke-CimMethod -InputObject $_ -MethodName GetOwner -ErrorAction SilentlyContinue).User } |
+        Where-Object { $_ } | Select-Object -Unique)
+    if ($owners.Count -gt 0 -and $owners -notcontains $env:USERNAME) {
+        Write-Host "This window is running as $env:USERNAME, but $($owners -join ', ') is signed in to Windows. Run reset as the account setup was run for." -ForegroundColor Red
+        return
+    }
     Write-Host ''
     Write-Host 'ARCA workshop: reset this laptop' -ForegroundColor Cyan
     Write-Host 'This deletes C:\Workshop, including everything the table made, and removes the workshop from this laptop.'
