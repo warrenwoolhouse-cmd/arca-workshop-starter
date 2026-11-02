@@ -131,7 +131,8 @@ function Test-QuickTunnel($Exe, $Protocol) {
             if ($m.Success) { $url = $m.Value }
         }
         if (-not $url) { return @{ Ok = $false; Detail = "couldn't open a test tunnel" } }
-        $deadline = (Get-Date).AddSeconds(40)
+        $waited = $false
+        $deadline = (Get-Date).AddSeconds(60)
         while ((Get-Date) -lt $deadline -and -not $process.HasExited) {
             $text = Read-Shared $log
             $used = [regex]::Match($text, 'Registered tunnel connection.*?protocol=(\w+)')
@@ -139,6 +140,10 @@ function Test-QuickTunnel($Exe, $Protocol) {
                 if ($used.Groups[1].Value -ne $Protocol) {
                     return @{ Ok = $false; Detail = "fell back to $($used.Groups[1].Value)" }
                 }
+                # A brand-new test address takes a few seconds to exist. Looking it up
+                # too early gets a "not found" answer that Windows then remembers, so
+                # the page seems not to answer for a minute or more. Wait once first.
+                if (-not $waited) { Start-Sleep -Seconds 12; $waited = $true }
                 $page = Get-Http $url
                 if ($page.Code -eq 200) { return @{ Ok = $true; Detail = 'a test page came back through the tunnel' } }
             }
@@ -280,6 +285,7 @@ try {
     elseif ($http2.Ok) { Add-Result 'Team sites' 'Test tunnel over QUIC (the fast way)' 'WARN' $quic.Detail 'Fine: the tunnels will use HTTP2 instead.' }
     else { Add-Result 'Team sites' 'Test tunnel over QUIC (the fast way)' 'FAIL' $quic.Detail }
     if ($http2.Ok) { Add-Result 'Team sites' 'Test tunnel over HTTP2 (the fallback)' 'PASS' $http2.Detail }
+    elseif ($quic.Ok) { Add-Result 'Team sites' 'Test tunnel over HTTP2 (the fallback)' 'WARN' $http2.Detail 'Fine: the tunnels use QUIC, which worked. Run the check again if the network changes.' }
     else { Add-Result 'Team sites' 'Test tunnel over HTTP2 (the fallback)' 'FAIL' $http2.Detail 'Team sites cannot be published from this network. Use the backup hotspot.' }
 } catch {
     Add-Result 'Team sites' 'Test tunnels' 'FAIL' (Get-Reason $_.Exception.Message) "Couldn't run the tunnel test. Tell Warren."
