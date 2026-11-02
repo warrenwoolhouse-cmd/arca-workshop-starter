@@ -799,10 +799,17 @@ function Invoke-SelfTest([string]$ClaudeExe, $Keys) {
              @(Get-ChildItem (Join-Path $TeamDir 'logs') -File -ErrorAction SilentlyContinue) +
              @(Get-Item (Join-Path $TeamDir 'TABLE.md'), (Join-Path $TeamDir 'workshop.json'), (Join-Path ([Environment]::GetFolderPath('Desktop')) $ShortcutName) -ErrorAction SilentlyContinue)
     $leaks = @()
+    $unread = @()
     foreach ($f in $files) {
-        $text = [IO.File]::ReadAllText($f.FullName)
+        # Shared read: the site keeps its own log open while it writes, and a plain
+        # read of a file that's open for writing is refused.
+        try {
+            $stream = [IO.File]::Open($f.FullName, 'Open', 'Read', 'ReadWrite, Delete')
+            try { $text = (New-Object IO.StreamReader($stream)).ReadToEnd() } finally { $stream.Dispose() }
+        } catch { $unread += $f.Name; continue }
         foreach ($s in $secrets) { if ($text.Contains($s)) { $leaks += $f.FullName } }
     }
+    if ($unread.Count) { Write-Log "secret scan couldn't read: $($unread -join ', ')"; Say-Warn "Couldn't check $($unread.Count) file(s) for keys: $($unread -join ', ')." }
     $taskXml = ''
     try { $taskXml = Export-ScheduledTask -TaskName $TaskName } catch {}
     foreach ($s in $secrets) { if ($taskXml.Contains($s)) { $leaks += "the $TaskName task" } }
