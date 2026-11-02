@@ -56,7 +56,8 @@ function Stop-Setup([string]$Reason) { throw (New-Object System.Exception ("SETU
 
 # Runs a program and returns its exit code and output. With -Secret, neither
 # the arguments nor the output reach the log.
-function Invoke-Program([string]$Exe, [string[]]$Arguments = @(), [switch]$Secret, [string]$WorkDir) {
+function Invoke-Program([string]$Exe, [string[]]$Arguments = @(), [switch]$Secret, [string]$WorkDir, [switch]$Ticker) {
+    if ($Ticker) { return Invoke-ProgramTicking $Exe $Arguments $WorkDir }
     $old = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'  # Windows PowerShell treats a program's stderr as an error otherwise
     if ($WorkDir) { Push-Location $WorkDir }
@@ -73,6 +74,30 @@ function Invoke-Program([string]$Exe, [string[]]$Arguments = @(), [switch]$Secre
         Write-Log "ran $(Split-Path $Exe -Leaf) $($Arguments -join ' '): exit $code"
         if ($text) { Write-Log $text }
     }
+    return [pscustomobject]@{ Code = $code; Output = $text }
+}
+
+# The same, for the slow installs: the program runs in the background while a
+# clock ticks every 10 seconds, so nobody thinks the laptop has stopped.
+function Invoke-ProgramTicking([string]$Exe, [string[]]$Arguments, [string]$WorkDir) {
+    $out = Join-Path $SetupDir 'program-out.txt'
+    $quoted = @($Arguments | ForEach-Object { if ($_ -match '\s') { '"' + $_ + '"' } else { $_ } })
+    $start = @{ FilePath = $Exe; ArgumentList = $quoted; NoNewWindow = $true; PassThru = $true
+        RedirectStandardOutput = $out; RedirectStandardError = "$out.err" }
+    if ($WorkDir) { $start.WorkingDirectory = $WorkDir }
+    $p = Start-Process @start
+    $null = $p.Handle  # without this, ExitCode can come back empty
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    Write-Host '         still working:' -NoNewline -ForegroundColor DarkGray
+    while (-not $p.WaitForExit(10000)) {
+        Write-Host (' {0}:{1:00}' -f [int][Math]::Floor($clock.Elapsed.TotalMinutes), $clock.Elapsed.Seconds) -NoNewline -ForegroundColor DarkGray
+    }
+    Write-Host (' done in {0}:{1:00}' -f [int][Math]::Floor($clock.Elapsed.TotalMinutes), $clock.Elapsed.Seconds) -ForegroundColor DarkGray
+    $code = $p.ExitCode
+    $text = ((@($out, "$out.err") | Where-Object { Test-Path $_ } | ForEach-Object { [IO.File]::ReadAllText($_) }) -join "`n").Trim()
+    Remove-Item $out, "$out.err" -ErrorAction SilentlyContinue
+    Write-Log "ran $(Split-Path $Exe -Leaf) $($Arguments -join ' '): exit $code"
+    if ($text) { Write-Log $text }
     return [pscustomobject]@{ Code = $code; Output = $text }
 }
 
@@ -234,13 +259,14 @@ function Assert-Winget($State) {
     Update-SessionPath
     if (Get-Command winget.exe -ErrorAction SilentlyContinue) { Say-Ok 'winget is ready'; return }
     Say 'Installing winget, the Windows installer (a few minutes)...'
-    try {
-        # Microsoft's documented bootstrap for machines without winget.
-        Install-PackageProvider -Name NuGet -Force -Scope AllUsers | Out-Null
-        Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery -Scope AllUsers | Out-Null
-        Import-Module Microsoft.WinGet.Client
-        Repair-WinGetPackageManager -AllUsers | Out-Null
-    } catch { Write-Log "winget bootstrap: $($_.Exception.Message)" }
+    # Microsoft's documented bootstrap for machines without winget, in its own
+    # PowerShell so the clock can tick while it runs.
+    $bootstrap = '$ProgressPreference = ''SilentlyContinue''; $ErrorActionPreference = ''Stop''; ' +
+        'Install-PackageProvider -Name NuGet -Force -Scope AllUsers | Out-Null; ' +
+        'Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery -Scope AllUsers | Out-Null; ' +
+        'Import-Module Microsoft.WinGet.Client; Repair-WinGetPackageManager -AllUsers | Out-Null'
+    $r = Invoke-Program 'powershell.exe' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $bootstrap) -Ticker
+    if ($r.Code -ne 0) { Write-Log "winget bootstrap exit $($r.Code)" }
     Update-SessionPath
     if (-not (Get-Command winget.exe -ErrorAction SilentlyContinue)) {
         $wa = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps'
@@ -257,7 +283,7 @@ function Install-Package($State, [string]$Key, [string]$Id, [string]$Name, [scri
     if (& $IsPresent) { Say-Ok "$Name is installed"; return }
     Say "Installing $Name..."
     $r = Invoke-Program 'winget.exe' @('install', '--id', $Id, '--exact', '--source', 'winget', '--silent',
-        '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
+        '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity') -Ticker
     Update-SessionPath
     if (-not (& $IsPresent)) {
         Stop-Setup "Couldn't install $Name (winget said $($r.Code)). Check the wifi, then run setup again. The details are in $LogFile."
@@ -281,7 +307,7 @@ function Install-Programs($State) {
     } else {
         Say 'Installing Claude Code...'
         # Anthropic's native Windows installer, in its own process.
-        $r = Invoke-Program 'powershell.exe' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', 'irm https://claude.ai/install.ps1 | iex')
+        $r = Invoke-Program 'powershell.exe' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', 'irm https://claude.ai/install.ps1 | iex') -Ticker
         Update-SessionPath
         $claude = Find-Claude
         if ($claude) { $version = Get-ClaudeVersion $claude }
@@ -406,7 +432,7 @@ function Install-TeamFolder($State, [int]$Team) {
 
     if (-not (Test-Path (Join-Path $TeamDir 'node_modules\@anthropic-ai\sdk'))) {
         $npm = Join-Path (Split-Path (Get-Command node.exe).Source) 'npm.cmd'
-        $r = Invoke-Program $npm @('ci', '--ignore-scripts', '--no-audit', '--no-fund', '--loglevel=error') -WorkDir $TeamDir
+        $r = Invoke-Program $npm @('ci', '--ignore-scripts', '--no-audit', '--no-fund', '--loglevel=error') -WorkDir $TeamDir -Ticker
         if ($r.Code -ne 0) { Stop-Setup "Couldn't install the folder's packages (npm said $($r.Code)). Check the wifi, then run setup again." }
         Say-Ok 'Installed the packages the table''s tools use'
     }
