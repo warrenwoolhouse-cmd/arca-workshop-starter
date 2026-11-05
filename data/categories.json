@@ -1,10 +1,10 @@
 [
   {"slug": "fraud", "name": "Fraud or identity theft", "description": "Accounts the person never opened, scam victims, compromised accounts."},
-  {"slug": "third_party", "name": "Third-party request", "description": "Someone writing for the customer: a financial counsellor, solicitor, broker, executor or family member. Wins over every category except fraud."},
+  {"slug": "third_party", "name": "Third-party request", "description": "Someone writing for the customer: a financial counsellor, solicitor, broker, executor or family member."},
   {"slug": "hardship", "name": "Hardship request", "description": "Can't pay, or asks for a payment arrangement, deferral or hardship help."},
   {"slug": "correction", "name": "Correction request", "description": "Says information about them is wrong and wants it fixed."},
-  {"slug": "removal", "name": "Removal request", "description": "Accepts the information is right but wants it taken off. Accurate information stays."},
-  {"slug": "complaint", "name": "Complaint", "description": "Unhappy with how they were treated and wants it put right, when it isn't mainly one of the above. AFCA and OAIC correspondence is always a complaint."},
+  {"slug": "removal", "name": "Removal request", "description": "Accepts the information is right but wants it taken off."},
+  {"slug": "complaint", "name": "Complaint", "description": "Unhappy with how they were treated and wants it put right."},
   {"slug": "declined", "name": "Declined application", "description": "Asks why an application was declined."},
   {"slug": "general", "name": "General enquiry", "description": "A question, a request for a copy of their information, or an account update such as a new address."},
   {"slug": "wrong_recipient", "name": "Wrong recipient", "description": "Belongs with Kestrel Credit Reporting or another lender."},
