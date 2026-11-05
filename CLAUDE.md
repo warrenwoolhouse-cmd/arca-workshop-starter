@@ -16,7 +16,9 @@ You're helping a table of about eight people at the ARCA Credit Summit. They wor
 ## The job
 Triage the shared inbox of WW Loans (a fictitious credit provider) for one day. **Today is Monday 9 November 2026**: every email arrived today, and deadlines count from today, whatever the laptop's clock says.
 
-- **`data/practice.json`:** the morning's 250 emails (ids P0001 to P0250).
+- **The morning's 250 emails** (ids P0001 to P0250) aren't on this laptop yet. Getting them is the table's first step, and they'll tell you where the emails are. If someone asks for anything that needs the emails before then, ask them where the emails are.
+  - Download the file with a command or a small Node script, then save it as `data/practice.json`. Everything else here expects it there. Don't use your web fetch tool: it returns a summary, not the file.
+  - Check it's a list of 250 emails, each with an `id`, `from`, `subject` and `body`, then tell the table how many arrived and show them two or three subjects.
 - **`data/categories.json`:** the ten categories, in tie-break order. Read them from this file; never type the list into code.
 - **The table's hand labels:** people can label emails by hand on their phones, on the team page. There are no other answers. Their labels are at `$WORKSHOP_CENTRAL_URL/api/team/labels`, with the header `Authorization: Bearer <WORKSHOP_TEAM_TOKEN>`, as `[{ "id", "category", "priority": true or false, "by", "note" }]`. The `note` is the person's reason for their label, in their own words, and may be empty. Notes are the table's judgement on the hard cases: use them when you work out why the tool disagrees, and when you write rules into the skill.
 
@@ -65,7 +67,7 @@ The site sends `workshop.json` to the central board a few seconds after every ch
 - **Never change** `server/guard.js`, `server/main.js`, `server/core.js`, `server/config.js`, `server/table.js` or `server/supervisor.js`. The guard keeps other tables out of your site and keeps your score live on the board. If something seems to need a change there, do it in `server/team-routes.js` instead.
 
 ## The second batch at 4:05pm
-The afternoon's 250 emails (ids H0001 to H0250) appear at https://workshop.warrenwoolhouse.com/batch2 at 4:05pm. Before that, the address answers "Not released yet". The table has 5 minutes. Make sure one simple command (such as `npm run batch2`) fetches them, labels them with the same tool, and adds them to `workshop.json` alongside the morning's. If the batch isn't released yet, it should say so in plain English and stop. Test it ahead of time on a copy of a few morning emails.
+The afternoon's 250 emails (ids H0001 to H0250) appear at https://workshop.warrenwoolhouse.com/batch2 at 4:05pm. Before that, the address answers "Not released yet". The table has 5 minutes. Make sure one simple command (such as `npm run batch2`) fetches them the same way as the morning's emails, labels them with the same tool, and adds them to `workshop.json` alongside the morning's. If the batch isn't released yet, it should say so in plain English and stop. Test it ahead of time on a copy of a few morning emails.
 
 ## Safety
 - This site is on the internet. Never put the API key, the team key, or anything that isn't meant to be seen, in `site/`, `saved/` or `workshop.json`. Never print either key in the terminal.

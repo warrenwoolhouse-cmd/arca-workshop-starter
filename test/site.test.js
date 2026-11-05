@@ -89,9 +89,14 @@ describe("serving and access", () => {
       const r = await fetch(`${site.base}${p}`);
       assert.equal(r.status, 404, p);
     }
+    // The table downloads the morning's emails itself; until then there's nothing to serve.
+    const target = path.join(site.dir, "data", "practice.json");
+    fs.rmSync(target, { force: true });
+    assert.equal((await fetch(`${site.base}/data/practice.json`)).status, 404);
+    fs.writeFileSync(target, JSON.stringify([{ id: "P0001", subject: "Test" }, { id: "P0002", subject: "Test 2" }]));
     const data = await fetch(`${site.base}/data/practice.json`);
     assert.equal(data.status, 200);
-    assert.equal((await data.json()).length, 250);
+    assert.equal((await data.json()).length, 2);
   });
 
   test("saves: JSON from the site's own pages, read back, stored in saved/", async () => {

@@ -30,7 +30,17 @@ function main() {
   const byName = new Map(categories.map((c) => [c.name.toLowerCase(), c.slug]));
   const features = JSON.parse(read("data/features.json"));
   const featureSlugs = new Set(features.map((f) => f.slug));
-  const morningIds = new Set(JSON.parse(read("data/practice.json")).map((e) => e.id));
+  // The table downloads the morning's emails as its first step, so they may not be here yet.
+  try {
+    const morning = JSON.parse(read("data/practice.json"));
+    if (Array.isArray(morning) && morning.length === 250) good.push("The morning's 250 emails are in data/practice.json.");
+    else warnings.push(`data/practice.json has ${Array.isArray(morning) ? morning.length : "no list of"} emails, not 250. Ask Claude Code to download the morning's emails again.`);
+  } catch (err) {
+    warnings.push(err.code === "ENOENT"
+      ? "The morning's emails aren't on this laptop yet. Tell Claude Code where they are, and it will save them as data/practice.json."
+      : "data/practice.json isn't a readable list of emails. Ask Claude Code to download the morning's emails again.");
+  }
+  const inBatch = (id, letter) => new RegExp(`^${letter}\\d{4}$`).test(id) && Number(id.slice(1)) >= 1 && Number(id.slice(1)) <= 250;
 
   let text;
   try { text = read("workshop.json"); } catch {
@@ -67,7 +77,7 @@ function main() {
     let morning = 0, afternoon = 0, flaggedMorning = 0, flaggedAfternoon = 0;
     for (const e of w.emails) {
       const id = e && typeof e.id === "string" ? e.id : null;
-      const known = id && (morningIds.has(id) || (/^H\d{4}$/.test(id) && Number(id.slice(1)) >= 1 && Number(id.slice(1)) <= 250));
+      const known = id && (inBatch(id, "P") || inBatch(id, "H"));
       if (!known) { bad.id.push(id ?? JSON.stringify(e && e.id)); continue; }
       if (seen.has(id)) dupes.add(id);
       seen.add(id);
