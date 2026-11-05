@@ -19,7 +19,7 @@ Triage the shared inbox of WW Loans (a fictitious credit provider) for one day. 
 - **The morning's 250 emails** (ids P0001 to P0250) aren't on this laptop yet. Getting them is the table's first step, and they'll tell you where the emails are. If someone asks for anything that needs the emails before then, ask them where the emails are.
   - Download the file with a command or a small Node script, then save it as `data/practice.json`. Everything else here expects it there. Don't use your web fetch tool: it returns a summary, not the file.
   - Check it's a list of 250 emails, each with an `id`, `from`, `subject` and `body`, then tell the table how many arrived and show them two or three subjects.
-- **`data/categories.json`:** the ten categories, each with a short description. Read them from this file; never type the list into code.
+- **`data/categories.json`:** the ten categories, each with a short id (`slug`) and a name. Read them from this file; never type the list into code.
 - **The table's hand labels:** people can label emails by hand on their phones, on the team page. There are no other answers. Their labels are at `$WORKSHOP_CENTRAL_URL/api/team/labels`, with the header `Authorization: Bearer <WORKSHOP_TEAM_TOKEN>`, as `[{ "id", "category", "priority": true or false, "by", "note" }]`. The `note` is the person's reason for their label, in their own words, and may be empty. Notes are the table's judgement on the hard cases: use them when you work out why the tool disagrees, and when you write rules into the skill.
 
 Every email gets one category and a priority flag (true or false).
