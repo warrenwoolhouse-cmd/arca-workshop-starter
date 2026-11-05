@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server/supervisor.js",
     "check": "node tools/check.js",
-    "hello": "node tools/hello.js",
+    "setuptable": "node tools/setuptable.js",
     "test": "node --test --test-concurrency=1 \"test/*.test.js\""
   },
   "dependencies": {

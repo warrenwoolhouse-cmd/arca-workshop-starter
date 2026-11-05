@@ -1,25 +1,25 @@
-// npm run hello [team name]: say hello to the board.
+// npm run setuptable [team name]: set up this table on the board.
 // Sets the team's name in workshop.json (keeping everything else in it), sends
 // the file straight to the board, and checks the table's site answers at its
 // public address. Says, in plain English, what worked and what didn't.
-// The /hello skill in Claude Code runs this.
+// The /setuptable skill in Claude Code runs this.
 
 const fs = require("fs");
 const config = require("../server/config");
 const { startingWorkshop, sydneyIso } = require("../server/table");
 
-const UA = "arca-workshop-hello/1.0";
+const UA = "arca-workshop-setuptable/1.0";
 const results = [];
 const ok = (text) => results.push(["OK  ", text]);
 const fix = (text) => results.push(["FIX ", text]);
 
 function finish(name) {
-  console.log("\nSaying hello to the board\n");
+  console.log("\nSetting up your table on the board\n");
   for (const [mark, text] of results) console.log(`  ${mark} ${text}`);
   const failed = results.some(([mark]) => mark === "FIX ");
   console.log(failed
-    ? "\nNot everything worked yet. Fix the lines marked FIX, then say hello again.\n"
-    : `\nHello from ${name}, table ${config.TEAM}. Look for your tile on the big screen.\n`);
+    ? "\nNot everything worked yet. Fix the lines marked FIX, then run /setuptable again.\n"
+    : `\n${name}, table ${config.TEAM}, is set up. Look for your tile on the big screen.\n`);
   process.exitCode = failed ? 1 : 0;
 }
 
@@ -38,7 +38,7 @@ async function main() {
   else {
     try { w = JSON.parse(text); } catch { w = null; }
     if (!w || typeof w !== "object" || Array.isArray(w)) {
-      fix("workshop.json is broken, so I haven't changed it. Run npm run check to see where it breaks, fix it, then say hello again.");
+      fix("workshop.json is broken, so I haven't changed it. Run npm run check to see where it breaks, fix it, then run /setuptable again.");
       return finish(name);
     }
   }
@@ -49,7 +49,7 @@ async function main() {
   const out = JSON.stringify(w, null, 2) + "\n";
   fs.writeFileSync(`${config.WORKSHOP_FILE}.tmp`, out);
   fs.renameSync(`${config.WORKSHOP_FILE}.tmp`, config.WORKSHOP_FILE);
-  ok(name ? `Your team name is now "${w.name}".` : `Your team name is "${w.name}". To change it, say hello again with the new name.`);
+  ok(name ? `Your team name is now "${w.name}".` : `Your team name is "${w.name}". To change it, run /setuptable again with the new name.`);
 
   // 2. Straight to the board.
   try {

@@ -46,7 +46,7 @@ The site sends `workshop.json` to the central board a few seconds after every ch
 
 - When the tool writes `workshop.json`, keep `team`, `name` and `features` as they are, replace or add the emails it labelled, and set `updated` to now. Write the whole file in one go.
 - `npm run check` checks the file and says, in plain English, what to fix. Run it after every change to `workshop.json`.
-- `/hello` (`npm run hello`) sets the team's name, sends `workshop.json` to the board and checks the site answers through the internet. Use it when the table names the team or asks whether it's connected.
+- `/setuptable` (`npm run setuptable`) sets the team's name, sends `workshop.json` to the board and checks the site answers through the internet. Use it when the table names the team or asks whether it's connected.
 - `site/dashboard.html` is the page shown on the big screen, so make it look good. It starts as a placeholder.
 - The bonus features are in `data/features.json`: what each one is, its points, and when it counts as done (`done_when`). Mark a feature done (with the `url` of the page that shows it) only when it meets its `done_when`.
 

@@ -403,6 +403,13 @@ function Get-StarterZip {
     return $zip
 }
 
+# The table's command: /setuptable, or /hello in a folder set up before 6 Nov 2026 (a rerun keeps the folder).
+function Get-TableCommand {
+    $pkg = Join-Path $TeamDir 'package.json'
+    if ((Test-Path $pkg) -and (Get-Content $pkg -Raw) -match '"hello"\s*:') { return 'hello' }
+    return 'setuptable'
+}
+
 function Install-TeamFolder($State, [int]$Team) {
     Say-Step "Setting up the table's folder ($TeamDir)"
     $exists = Test-Path (Join-Path $TeamDir 'package.json')
@@ -538,7 +545,7 @@ function Set-ClaudeSettings([string]$ApiKey) {
 
     # First-launch questions. Claude Code keeps these answers in ~/.claude.json;
     # the docs don't describe setting them in advance, so the night-before
-    # /hello on each laptop is the check that this worked.
+    # /setuptable on each laptop is the check that this worked.
     $statePath = Join-Path $env:USERPROFILE '.claude.json'
     try { $g = Read-JsonFile $statePath } catch {
         Say-Warn 'Claude Code''s own settings file couldn''t be read, so its first launch may ask a few questions. Answer them once.'
@@ -809,14 +816,14 @@ function Invoke-SelfTest([string]$ClaudeExe, $Keys) {
     if ($without.Code -eq 403) { Say-Ok 'and refuses anyone without the table''s key' }
     else { $failed++; Say-Fail "The site didn't refuse a visitor without the key (code $($without.Code)). Tell Warren." }
 
-    # 4. The board has the table's file (the same check /hello runs).
+    # 4. The board has the table's file (the same check /setuptable runs).
     $npm = Join-Path (Split-Path (Get-Command node.exe).Source) 'npm.cmd'
-    $hello = Invoke-Program $npm @('run', '--silent', 'hello') -WorkDir $TeamDir
-    if ($hello.Code -eq 0) { Say-Ok 'The board has the table''s file' }
+    $tableCheck = Invoke-Program $npm @('run', '--silent', (Get-TableCommand)) -WorkDir $TeamDir
+    if ($tableCheck.Code -eq 0) { Say-Ok 'The board has the table''s file' }
     else {
         $failed++
         Say-Fail 'The board hasn''t got the table''s file yet:'
-        foreach ($line in ($hello.Output -split "`n" | Where-Object { $_ -match '^\s*FIX' })) { Write-Host "         $($line.Trim())" -ForegroundColor Red }
+        foreach ($line in ($tableCheck.Output -split "`n" | Where-Object { $_ -match '^\s*FIX' })) { Write-Host "         $($line.Trim())" -ForegroundColor Red }
     }
 
     # 5. No key in anything setup wrote.
@@ -891,7 +898,7 @@ function Invoke-Setup {
     Write-Log "ready in $minutes minutes"
     Write-Host ''
     Write-Host 'Last step: Start workshop is opening now. When Claude Code appears, type ' -NoNewline
-    Write-Host '/hello' -ForegroundColor Cyan -NoNewline
+    Write-Host "/$(Get-TableCommand)" -ForegroundColor Cyan -NoNewline
     Write-Host ' and press Enter.'
     Write-Host 'It should finish with "Look for your tile on the big screen". If Claude Code asks anything first, answer it once.'
     # Through Explorer, so Claude Code opens as the signed-in person, not as administrator.

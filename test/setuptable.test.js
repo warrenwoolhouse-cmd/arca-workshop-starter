@@ -5,10 +5,10 @@ const path = require("path");
 const { after, before, describe, test } = require("node:test");
 const { TOKEN, startSite, startCentral } = require("./helpers");
 
-// Runs npm run hello's script in the site's folder, with the site as its "public" address.
-function hello(site, central, args = [], env = {}) {
+// Runs npm run setuptable's script in the site's folder, with the site as its "public" address.
+function setupTable(site, central, args = [], env = {}) {
   return new Promise((resolve) => {
-    execFile(process.execPath, ["tools/hello.js", ...args], {
+    execFile(process.execPath, ["tools/setuptable.js", ...args], {
       cwd: site.dir,
       env: {
         ...process.env, WORKSHOP_TEAM: "7", WORKSHOP_TEAM_NAME: "Test Table", WORKSHOP_TEAM_TOKEN: TOKEN,
@@ -18,7 +18,7 @@ function hello(site, central, args = [], env = {}) {
   });
 }
 
-describe("npm run hello", () => {
+describe("npm run setuptable", () => {
   let site, central;
   before(async () => { central = await startCentral(); site = await startSite({ central }); });
   after(async () => { await site.stop(); await central.stop(); });
@@ -29,12 +29,12 @@ describe("npm run hello", () => {
     w.emails = [{ id: "P0001", category: "general", priority: false }];
     fs.writeFileSync(file(), JSON.stringify(w));
     const before = central.received.length;
-    const r = await hello(site, central, ["Fine", "Print"]);
+    const r = await setupTable(site, central, ["Fine", "Print"]);
     assert.equal(r.code, 0, r.out);
     assert.match(r.out, /Your team name is now "Fine Print"/);
     assert.match(r.out, /The board has your file/);
     assert.match(r.out, /Your site answers/);
-    assert.match(r.out, /Hello from Fine Print, table 7/);
+    assert.match(r.out, /Fine Print, table 7, is set up/);
     const after = JSON.parse(fs.readFileSync(file(), "utf8"));
     assert.equal(after.name, "Fine Print");
     assert.equal(after.team, 7);
@@ -46,7 +46,7 @@ describe("npm run hello", () => {
   });
 
   test("with no name, keeps the current one", async () => {
-    const r = await hello(site, central);
+    const r = await setupTable(site, central);
     assert.equal(r.code, 0, r.out);
     assert.match(r.out, /Your team name is "Fine Print"/);
   });
@@ -54,7 +54,7 @@ describe("npm run hello", () => {
   test("leaves a broken file alone and says how to fix it", async () => {
     const good = fs.readFileSync(file(), "utf8");
     fs.writeFileSync(file(), '{"team": 7, "emails": [');
-    const r = await hello(site, central, ["Other Name"]);
+    const r = await setupTable(site, central, ["Other Name"]);
     assert.equal(r.code, 1);
     assert.match(r.out, /workshop.json is broken, so I haven't changed it/);
     assert.equal(fs.readFileSync(file(), "utf8"), '{"team": 7, "emails": [');
@@ -63,7 +63,7 @@ describe("npm run hello", () => {
 
   test("says plainly when the board refuses the key or the site can't be reached", async () => {
     central.status = 401;
-    const r = await hello(site, central, [], { WORKSHOP_SITE_URL: "http://127.0.0.1:9" });
+    const r = await setupTable(site, central, [], { WORKSHOP_SITE_URL: "http://127.0.0.1:9" });
     central.status = 200;
     assert.equal(r.code, 1);
     assert.match(r.out, /didn't recognise this laptop's table key/);
@@ -72,7 +72,7 @@ describe("npm run hello", () => {
   });
 
   test("a laptop that isn't set up is told to ask Warren", async () => {
-    const r = await hello(site, central, [], { WORKSHOP_TEAM_TOKEN: "" });
+    const r = await setupTable(site, central, [], { WORKSHOP_TEAM_TOKEN: "" });
     assert.equal(r.code, 1);
     assert.match(r.out, /hasn't been set up for the workshop yet/);
   });
