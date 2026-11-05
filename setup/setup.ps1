@@ -6,7 +6,7 @@
 #
 #   irm https://raw.githubusercontent.com/warrenwoolhouse-cmd/arca-workshop-starter/main/setup/setup.ps1 | iex
 #
-# It asks for the table number and the admin password. It's safe to run again:
+# It asks for the table number and the setup password. It's safe to run again:
 # a second run for the same table repairs anything missing and leaves the
 # table's work alone. A different table number moves the old folder aside and
 # sets the laptop up as the new table. setup/reset.ps1 undoes all of it.
@@ -345,7 +345,7 @@ function ConvertFrom-Secure([Security.SecureString]$Secure) {
 # never printed or logged.
 function Get-TableKeys([int]$Team) {
     $wrong = 0
-    $secure = Read-Host 'Admin password (it won''t show as you type)' -AsSecureString
+    $secure = Read-Host 'Setup password (it won''t show as you type)' -AsSecureString
     while ($true) {
         $plain = ConvertFrom-Secure $secure
         $body = @{ team = $Team; password = $plain } | ConvertTo-Json -Compress
@@ -364,9 +364,9 @@ function Get-TableKeys([int]$Team) {
             }
             401 {
                 $wrong++
-                if ($wrong -ge 3) { Stop-Setup 'That password was wrong three times. Check it on the admin page, then run setup again.' }
+                if ($wrong -ge 3) { Stop-Setup 'That password was wrong three times. Check the setup password, then run setup again.' }
                 Write-Host 'That password wasn''t right.' -ForegroundColor Yellow
-                $secure = Read-Host 'Admin password' -AsSecureString
+                $secure = Read-Host 'Setup password' -AsSecureString
             }
             403 {
                 Write-Host 'Setup is closed. Open it on the admin page (Setup: Open), then press Enter here to try again.' -ForegroundColor Yellow
@@ -851,7 +851,7 @@ function Invoke-Setup {
     $clock = [Diagnostics.Stopwatch]::StartNew()
     Write-Host ''
     Write-Host 'ARCA workshop: laptop setup' -ForegroundColor Cyan
-    Write-Host 'Takes about 10 minutes. It asks for the table number and the admin password.'
+    Write-Host 'Takes about 10 minutes. It asks for the table number and the setup password.'
 
     Assert-Ready  # before anything changes
     New-Item -ItemType Directory -Force -Path $Root | Out-Null
