@@ -46,8 +46,8 @@ The site sends `workshop.json` to the central board a few seconds after every ch
 ## How to classify
 - **Use Node.** Python isn't installed on this laptop. Write tools as Node scripts in `tools/`, and add an npm script for anything people need to type, such as `npm run triage`.
 - The Anthropic SDK (`@anthropic-ai/sdk`) is already installed, and `ANTHROPIC_API_KEY` is already set.
-- Classify every email with `claude-haiku-5-5` first: it's fast and cheap. Send an email on to `claude-sonnet-5-5` only when it's a hard one (for example, Haiku's answer says it isn't sure), or when the table asks for Sonnet. Keep the model names in one place, so the table can see and change them.
-- Some models reject a forced `tool_choice` (`tool` or `any`) with an error. Use `tool_choice: { type: "auto" }` with `strict: true` on the tool, so the same request works on both models.
+- **Classify every email with `claude-haiku-5-5`.** It's the default: fast and cheap. Don't switch to another model on your own, not even for hard emails. If the table asks for a different model, such as `claude-sonnet-5-5`, tell them it's slower and costs more, and switch only once they confirm. Keep the model name in one place, so the table can see and change it.
+- Some models reject a forced `tool_choice` (`tool` or `any`) with an error. Use `tool_choice: { type: "auto" }` with `strict: true` on the tool, so the same request works on any model.
 - Keep the classification instructions in one plain-English file the table can read and edit, such as `instructions.md`.
 - Run up to 20 requests at once. The SDK retries busy responses for you. All 250 emails should take a minute or two, not ten.
 - Don't read all of `practice.json` into this conversation. Look at a handful of emails at a time. The whole file would make every later step slow and expensive.
