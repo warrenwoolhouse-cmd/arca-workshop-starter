@@ -41,7 +41,7 @@ The site sends `workshop.json` to the central board a few seconds after every ch
 - `npm run check` checks the file and says, in plain English, what to fix. Run it after every change to `workshop.json`.
 - `/setuptable` (`npm run setuptable`) sets the team's name, sends `workshop.json` to the board and checks the site answers through the internet. Use it when the table names the team or asks whether it's connected.
 - `site/dashboard.html` is the page shown on the big screen, so make it look good. It starts as a placeholder.
-- The bonus features are in `data/features.json`: what each one is, its points, and when it counts as done (`done_when`). Mark a feature done (with the `url` of the page that shows it) only when it meets its `done_when`.
+- The bonus features are listed in `data/features.json`: names and points only. The table has the descriptions on paper. Build a feature from what the table tells you it should do, in their words, and ask them when it's unclear; don't invent the spec. Mark a feature done (with the `url` of the page that shows it) when the table says it does what they described.
 
 ## How to classify
 - **Use Node.** Python isn't installed on this laptop. Write tools as Node scripts in `tools/`, and add an npm script for anything people need to type, such as `npm run triage`.
