@@ -19,6 +19,7 @@ $Root = 'C:\Workshop'
 $StateFile = 'C:\Workshop\setup\state.json'
 $TaskName = 'ARCA workshop site'
 $ShortcutName = 'Start workshop.lnk'
+$SiteLinkNames = @('Team Pre-built Tools', 'Team Dashboard')  # desktop links setup made (.lnk, or .url without Edge)
 $EnvNames = @('ANTHROPIC_API_KEY', 'WORKSHOP_TEAM', 'WORKSHOP_TEAM_NAME', 'WORKSHOP_TEAM_TOKEN', 'WORKSHOP_SITE_URL', 'WORKSHOP_CENTRAL_URL')
 $Packages = [ordered]@{ git = 'Git.Git'; node = 'OpenJS.NodeJS.LTS'; cloudflared = 'Cloudflare.cloudflared' }
 $Problems = New-Object System.Collections.Generic.List[string]
@@ -91,10 +92,13 @@ function Invoke-Reset {
     Get-ChildItem $env:USERPROFILE -Filter '.claude.json.*' -Force -ErrorAction SilentlyContinue | Remove-Item -Force
     Say-Ok 'Removed Claude Code''s settings and sign-in'
 
-    # 4. The shortcut.
-    $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) $ShortcutName
-    if (Test-Path $lnk) { Remove-Item $lnk -Force }
-    Say-Ok 'Removed the Start workshop shortcut'
+    # 4. The shortcuts: Start workshop and the two site links.
+    $desktop = [Environment]::GetFolderPath('Desktop')
+    foreach ($f in @($ShortcutName) + ($SiteLinkNames | ForEach-Object { "$_.lnk"; "$_.url" })) {
+        $lnk = Join-Path $desktop $f
+        if (Test-Path $lnk) { Remove-Item $lnk -Force }
+    }
+    Say-Ok 'Removed the Start workshop shortcut and the two site links'
 
     # 5. Power settings back as they were (Windows defaults if setup didn't record them).
     $before = Get-Prop $state 'power_before'
@@ -109,6 +113,18 @@ function Invoke-Reset {
     }
     [void](Invoke-Quiet 'powercfg.exe' @('/setactive', 'SCHEME_CURRENT'))
     Say-Ok 'Put the sleep, screen and lid settings back'
+    # Taskbar button combining, as it was before setup (a value setup found missing is removed).
+    $tb = Get-Prop $state 'taskbar_before'
+    if ($tb) {
+        $adv = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+        foreach ($n in 'TaskbarGlomLevel', 'MMTaskbarGlomLevel') {
+            $v = Get-Prop $tb $n
+            if ($null -eq $v) { Remove-ItemProperty -Path $adv -Name $n -ErrorAction SilentlyContinue }
+            else { Set-ItemProperty -Path $adv -Name $n -Value ([int]$v) -Type DWord }
+        }
+        Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+        Say-Ok 'Put the taskbar button setting back'
+    }
 
     $wu = 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
     if (Get-Prop $state 'paused_updates') {

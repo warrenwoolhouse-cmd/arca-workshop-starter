@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dashboard coming soon</title>
+<title>Team Dashboard</title>
 <link rel="stylesheet" href="/tokens.css">
 <style>
   /* Placeholder until the table builds its own dashboard. It fills any
@@ -54,7 +54,7 @@
       const w = await (await fetch("/workshop.json", { cache: "no-store" })).json();
       if (w.team) {
         document.getElementById("table").textContent = `TABLE ${w.team}`;
-        document.title = `Table ${w.team}: dashboard coming soon`;
+        document.title = "Team Dashboard";
       }
       if (w.name) document.getElementById("name").textContent = w.name;
       const n = Array.isArray(w.emails) ? w.emails.length : 0;

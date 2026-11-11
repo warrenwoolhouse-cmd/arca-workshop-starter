@@ -31,6 +31,7 @@ $LogFile = Join-Path $SetupDir 'setup-log.txt'
 $StateFile = Join-Path $SetupDir 'state.json'
 $TaskName = 'ARCA workshop site'
 $ShortcutName = 'Start workshop.lnk'
+$SiteLinkNames = @('Team Pre-built Tools', 'Team Dashboard')  # desktop links; reset.ps1 removes them too
 $ClaudeMinVersion = [version]'2.1.233'  # auto mode on native Windows
 $EnvNames = @('ANTHROPIC_API_KEY', 'WORKSHOP_TEAM', 'WORKSHOP_TEAM_NAME', 'WORKSHOP_TEAM_TOKEN', 'WORKSHOP_SITE_URL', 'WORKSHOP_CENTRAL_URL')
 # For testing only: a folder holding starter.zip and check-network.ps1 to use
@@ -739,6 +740,59 @@ function Set-PowerAndUpdates($State) {
     } catch { Say-Warn 'Couldn''t pause Windows Update. Pause it for a week in Settings, Windows Update.' }
 }
 
+function Set-TaskbarLabels($State) {
+    # Never combine taskbar buttons, so the two browser windows show as
+    # "Team Pre-built Tools" and "Team Dashboard" (Warren, 11 Nov 2026).
+    # Windows 11 builds before its 2023 update ignore "never" and keep combining.
+    # reset.ps1 puts back what was here before.
+    $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
+    $names = @('TaskbarGlomLevel', 'MMTaskbarGlomLevel')
+    $props = Get-ItemProperty $key -ErrorAction SilentlyContinue
+    if ($null -eq (Get-Prop $State 'taskbar_before')) {
+        $before = New-Object psobject
+        foreach ($n in $names) { Set-Prop $before $n (Get-Prop $props $n) }
+        Set-Prop $State 'taskbar_before' $before
+        Save-State $State
+    }
+    if (@($names | Where-Object { (Get-Prop $props $_) -ne 2 }).Count -eq 0) {
+        Say-Ok 'Taskbar buttons already show each window''s name'
+        return
+    }
+    try {
+        foreach ($n in $names) { Set-ItemProperty -Path $key -Name $n -Value 2 -Type DWord -ErrorAction Stop }
+        # The taskbar reads the setting when it starts; Windows restarts it at once.
+        Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+        Say-Ok 'Taskbar buttons show each window''s name (never combined)'
+    } catch { Say-Warn 'Couldn''t change the taskbar. In Settings, Personalisation, Taskbar, set "Combine taskbar buttons" to Never.' }
+}
+
+function Install-SiteLinks($Keys) {
+    # Desktop links to the two pages (Warren, 11 Nov 2026), each opening its own
+    # Edge window; without Edge, plain internet shortcuts for the default browser.
+    # The links hold the team key, as the team page's QR code does; reset.ps1 removes them.
+    $desktop = [Environment]::GetFolderPath('Desktop')
+    $urls = @([string]$Keys.team_page_url, "$($Keys.site_url)/dashboard.html?key=$($Keys.token)")
+    $edge = $null
+    try { $edge = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe' -ErrorAction Stop).'(default)' } catch {}
+    if ($edge -and -not (Test-Path $edge)) { $edge = $null }
+    $shell = New-Object -ComObject WScript.Shell
+    for ($i = 0; $i -lt $SiteLinkNames.Count; $i++) {
+        $name = $SiteLinkNames[$i]
+        foreach ($ext in '.lnk', '.url') { Remove-Item (Join-Path $desktop "$name$ext") -Force -ErrorAction SilentlyContinue }
+        if ($edge) {
+            $s = $shell.CreateShortcut((Join-Path $desktop "$name.lnk"))
+            $s.TargetPath = $edge
+            $s.Arguments = "--new-window --no-first-run `"$($urls[$i])`""
+            $s.IconLocation = "$edge,0"
+            $s.Description = "Open $name"
+            $s.Save()
+        } else {
+            Write-TextFile (Join-Path $desktop "$name.url") "[InternetShortcut]`r`nURL=$($urls[$i])`r`n"
+        }
+    }
+    Say-Ok 'Put "Team Pre-built Tools" and "Team Dashboard" links on the desktop'
+}
+
 function Install-Shortcut([string]$ClaudeExe) {
     $start = @"
 # Opens the workshop: the team page and the team's site in the browser, and
@@ -750,8 +804,15 @@ foreach (`$n in @('$($EnvNames -join "', '")')) {
 }
 `$env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
 if (`$env:WORKSHOP_TEAM_TOKEN) {
-    Start-Process "`$env:WORKSHOP_CENTRAL_URL/team/`$env:WORKSHOP_TEAM_TOKEN"
-    Start-Process "`$env:WORKSHOP_SITE_URL/dashboard.html?key=`$env:WORKSHOP_TEAM_TOKEN"
+    # Two Edge windows, not two tabs, so each gets its own taskbar button:
+    # "Team Pre-built Tools" and "Team Dashboard" (Warren, 11 Nov 2026).
+    # Without Edge, the default browser opens them as tabs.
+    `$first = `$true
+    foreach (`$u in @("`$env:WORKSHOP_CENTRAL_URL/team/`$env:WORKSHOP_TEAM_TOKEN", "`$env:WORKSHOP_SITE_URL/dashboard.html?key=`$env:WORKSHOP_TEAM_TOKEN")) {
+        if (-not `$first) { Start-Sleep -Seconds 2 }
+        `$first = `$false
+        try { Start-Process msedge -ArgumentList @('--new-window', '--no-first-run', `$u) -ErrorAction Stop } catch { Start-Process `$u }
+    }
 }
 `$wt = Get-Command wt.exe -ErrorAction SilentlyContinue
 if (`$wt) { Start-Process `$wt.Source -ArgumentList @('-d', '"$TeamDir"', '"$ClaudeExe"') }
@@ -883,7 +944,9 @@ function Invoke-Setup {
     Install-Tunnel ([string]$keys.tunnel_token)
     Install-SiteTask $envChanged
     Set-PowerAndUpdates $state
+    Set-TaskbarLabels $state
     [void](Install-Shortcut $claude)
+    Install-SiteLinks $keys
     $failed = Invoke-SelfTest $claude $keys
     Set-FolderOwner
     $keys = $null
