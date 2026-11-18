@@ -39,9 +39,10 @@ The site sends `workshop.json` to the central board a few seconds after every ch
 
 - When the tool writes `workshop.json`, keep `team`, `name` and `features` as they are, replace or add the emails it labelled, and set `updated` to now. Write the whole file in one go.
 - `npm run check` checks the file and says, in plain English, what to fix. Run it after every change to `workshop.json`.
-- `/setuptable` (`npm run setuptable`) sets the team's name, sends `workshop.json` to the board and checks the site answers through the internet. Use it when the table names the team or asks whether it's connected.
-- `site/dashboard.html` is the page shown on the big screen, so make it look good. It starts as a placeholder. Keep its page title as "Team Dashboard": that's the name the table looks for on the laptop's taskbar.
-- The bonus features are listed in `data/features.json`: names and points only. The table has the descriptions on paper. Build a feature from what the table tells you it should do, in their words, and ask them when it's unclear; don't invent the spec. Mark a feature done (with the `url` of the page that shows it) when the table says it does what they described.
+- `/setupteam` (`npm run setupteam`) sets the team's name, sends `workshop.json` to the board and checks the site answers through the internet. Use it when the table names the team or asks whether it's connected.
+- `site/dashboard.html` is the page shown on the big screen, so make it clear and easy to read from across the room. It starts as a plain placeholder. Keep its page title as "Team Dashboard": that's the name the table looks for on the laptop's taskbar.
+- The bonus features are listed in `data/features.json`: names and points only. The table has the descriptions on paper. Build a feature from what the table tells you it should do, in their words, and ask them when it's unclear; don't invent the spec.
+- **Claim each feature as soon as you've built it.** Once what the table asked for under a feature's name works, set that feature to `"done": true` in `workshop.json`'s `features`, with the `url` of the page that shows it, run `npm run check`, and tell the table it's now claimed on the board. Don't wait for the table to say it's finished or to ask you to claim it: a feature scores only once it's marked done in `workshop.json`, and the table may not know that. If the table later says it isn't right, fix it, or set `done` back to false until it is.
 
 ## How to classify
 - **Use Node.** Python isn't installed on this laptop. Write tools as Node scripts in `tools/`, and add an npm script for anything people need to type, such as `npm run triage`.
@@ -54,7 +55,7 @@ The site sends `workshop.json` to the central board a few seconds after every ch
 
 ## The site
 - Files in `site/` are served at the table's address: `site/dashboard.html` is `/dashboard.html`. Pages can also load `/workshop.json` and the emails at `/data/practice.json`.
-- Use the Warren Woolhouse look the placeholder uses: link `/tokens.css`, use only its colours and the Lexend font, square corners, one teal accent per page. The logo is `/assets/ww-mark.svg` (`/assets/ww-mark-reversed.svg` on graphite).
+- **The look is the table's call.** Build pages plain, clear and readable, and change the colours, fonts, layout and style whenever the table asks. Don't choose a brand or theme for them.
 - **Saving from a page** (overrides, approvals, drafts): `POST /api/save/<name>` with a JSON body stores it in `saved/<name>.json`, and `GET /api/save/<name>` reads it back. Names use letters, numbers, dashes and underscores. Only the site's own pages can save.
 - **Your own endpoints** go in `server/team-routes.js` (instructions are at the top of the file). The site reloads it within seconds. Use it, for example, to merge phone overrides into `workshop.json` as soon as they're saved.
 - **Never change** `server/guard.js`, `server/main.js`, `server/core.js`, `server/config.js`, `server/table.js` or `server/supervisor.js`. The guard keeps other tables out of your site and keeps your score live on the board. If something seems to need a change there, do it in `server/team-routes.js` instead.

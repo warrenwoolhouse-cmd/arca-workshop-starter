@@ -36,9 +36,9 @@ describe("serving and access", () => {
     assert.equal(d.status, 200);
     assert.equal(d.headers.get("cache-control"), "no-store");
     assert.match(await d.text(), /hasn't built its dashboard yet/);
-    const css = await fetch(`${site.base}/tokens.css`);
-    assert.equal(css.headers.get("cache-control"), "no-store");
-    assert.match(css.headers.get("content-type"), /^text\/css/);
+    // The placeholder carries no design system: the look is the table's call.
+    assert.doesNotMatch(await (await fetch(`${site.base}/dashboard.html`)).text(), /tokens\.css|ww-mark/);
+    assert.equal((await fetch(`${site.base}/tokens.css`)).status, 404);
   });
 
   test("through the tunnel without the key: the 403 page and no data", async () => {

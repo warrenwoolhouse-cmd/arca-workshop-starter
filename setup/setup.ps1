@@ -404,11 +404,13 @@ function Get-StarterZip {
     return $zip
 }
 
-# The table's command: /setuptable, or /hello in a folder set up before 6 Nov 2026 (a rerun keeps the folder).
+# The table's command: /setupteam (since 18 Nov 2026), or the one a kept folder was set up with
+# (a rerun keeps the folder): /setuptable from 6 to 18 Nov 2026, /hello before that.
 function Get-TableCommand {
     $pkg = Join-Path $TeamDir 'package.json'
     if ((Test-Path $pkg) -and (Get-Content $pkg -Raw) -match '"hello"\s*:') { return 'hello' }
-    return 'setuptable'
+    if ((Test-Path $pkg) -and (Get-Content $pkg -Raw) -match '"setuptable"\s*:') { return 'setuptable' }
+    return 'setupteam'
 }
 
 function Install-TeamFolder($State, [int]$Team) {
@@ -546,7 +548,7 @@ function Set-ClaudeSettings([string]$ApiKey) {
 
     # First-launch questions. Claude Code keeps these answers in ~/.claude.json;
     # the docs don't describe setting them in advance, so the night-before
-    # /setuptable on each laptop is the check that this worked.
+    # /setupteam on each laptop is the check that this worked.
     $statePath = Join-Path $env:USERPROFILE '.claude.json'
     try { $g = Read-JsonFile $statePath } catch {
         Say-Warn 'Claude Code''s own settings file couldn''t be read, so its first launch may ask a few questions. Answer them once.'
@@ -877,7 +879,7 @@ function Invoke-SelfTest([string]$ClaudeExe, $Keys) {
     if ($without.Code -eq 403) { Say-Ok 'and refuses anyone without the table''s key' }
     else { $failed++; Say-Fail "The site didn't refuse a visitor without the key (code $($without.Code)). Tell Warren." }
 
-    # 4. The board has the table's file (the same check /setuptable runs).
+    # 4. The board has the table's file (the same check /setupteam runs).
     $npm = Join-Path (Split-Path (Get-Command node.exe).Source) 'npm.cmd'
     $tableCheck = Invoke-Program $npm @('run', '--silent', (Get-TableCommand)) -WorkDir $TeamDir
     if ($tableCheck.Code -eq 0) { Say-Ok 'The board has the table''s file' }
